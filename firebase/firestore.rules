@@ -1,0 +1,67 @@
+rules_version = '2';
+
+// Reglas de seguridad de CineMax.
+// La app inicia una sesión anónima de Firebase Authentication en cada navegador:
+// sin sesión no se lee ni se escribe nada. Los usuarios, contraseñas y datos RUD
+// NO se guardan en Firestore (siguen en el navegador, como en la versión original).
+//
+// Nota: los roles (admin, portería, confitería) de esta app se validan en la interfaz,
+// no con Firebase Auth. Para producción real, migrar el ingreso a Firebase Auth con
+// roles en documentos `usuarios/{uid}` como en el proyecto ICA y endurecer estas reglas.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function sesion() { return request.auth != null; }
+    // Cada documento es { datos: <objeto de la app>, orden: número, actualizado: fecha }
+    function documento() {
+      return request.resource.data.keys().hasOnly(['datos', 'orden', 'actualizado'])
+        && request.resource.data.datos is map
+        && request.resource.data.orden is number;
+    }
+
+    match /peliculas/{id} {
+      allow read: if sesion();
+      allow write: if sesion() && (request.method == 'delete' || documento());
+    }
+
+    match /confiteria/{id} {
+      allow read: if sesion();
+      allow delete: if sesion();
+      allow create, update: if sesion() && documento()
+        && request.resource.data.datos.name is string
+        && request.resource.data.datos.name.size() > 0 && request.resource.data.datos.name.size() <= 60
+        && request.resource.data.datos.price is number && request.resource.data.datos.price > 0
+        && request.resource.data.datos.stock is number && request.resource.data.datos.stock >= 0;
+    }
+
+    match /boletos/{id} {
+      allow read: if sesion();
+      // Un boleto no se borra desde la app: solo se crea y se marca como usado en portería.
+      allow create, update: if sesion() && documento();
+      allow delete: if false;
+    }
+
+    match /vouchers/{id} {
+      allow read: if sesion();
+      allow create, update: if sesion() && documento();
+      allow delete: if false;
+    }
+
+    match /ordenes/{id} {
+      allow read: if sesion();
+      allow create: if sesion() && documento();
+      allow update, delete: if false;
+    }
+
+    // Cola de correos: la app solo crea; el estado lo cambia la Cloud Function (Admin SDK).
+    match /correos/{id} {
+      allow read: if sesion();
+      allow create: if sesion()
+        && request.resource.data.estado == 'pendiente'
+        && request.resource.data.para is string && request.resource.data.para.size() <= 254
+        && request.resource.data.html is string && request.resource.data.html.size() < 200000
+        && request.resource.data.ordenId is string;
+      allow update, delete: if false;
+    }
+  }
+}

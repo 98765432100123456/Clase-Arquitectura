@@ -28,6 +28,14 @@ import {
   CreditCard,
   ShieldCheck,
 } from 'lucide-react';
+// [CineMax mejoras] Módulos nuevos agregados por aparte (src/cinemax/). El código original no se elimina.
+import { SeatMatrix } from './cinemax/components/SeatMatrix';
+import { ConfectioneryAdmin } from './cinemax/components/ConfectioneryAdmin';
+import { AvisoCorreoCompra, BandejaCorreos } from './cinemax/components/Correos';
+import { PasosCompra, EstadoBaseDatos } from './cinemax/components/Extras';
+import { useCineMaxFirebase } from './cinemax/firebase/useCineMaxFirebase';
+/** true: matriz por zonas nueva. false: vuelve a la cuadrícula original (que se conserva abajo). */
+const MATRIZ_POR_ZONAS = true;
 
 // ============================================================================
 // 1. MODELOS DE DATOS
@@ -544,6 +552,21 @@ export function CineMaxApp() {
       });
     } catch {}
   };
+
+  // [CineMax mejoras] Vinculación con Firebase Firestore (como el proyecto ICA).
+  // Sin configuración en .env.local queda en "modo demostración" y todo funciona igual que antes.
+  const estadoBD = useCineMaxFirebase({
+    showtimes,
+    setShowtimes: (v) => setShowtimes(sanitizeShowtimes(v)),
+    confectionery,
+    setConfectionery,
+    tickets,
+    setTickets,
+    vouchers,
+    setVouchers,
+    orders,
+    setOrders,
+  });
 
   // Navegación
   const [activeTab, setActiveTab] = useState<'client' | 'tickets' | 'admin' | 'gatekeeper' | 'kds'>('client');
@@ -1291,6 +1314,8 @@ export function CineMaxApp() {
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
         {activeTab === 'client' && (
           <div>
+            {/* [CineMax mejoras] Progreso de la compra */}
+            {purchaseStep !== 'billboard' && <PasosCompra paso={purchaseStep} />}
             {purchaseStep === 'billboard' && (
               <div className="space-y-6">
                 <div>
@@ -1363,6 +1388,16 @@ export function CineMaxApp() {
                 </div>
 
                 <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 sm:p-8 space-y-6">
+                  {/* [CineMax mejoras] Matriz por zonas; usa el mismo handleSeatClick original */}
+                  {MATRIZ_POR_ZONAS && (
+                    <SeatMatrix
+                      seats={selectedSlot.seats}
+                      selectedSeats={selectedSeats}
+                      onSeatClick={handleSeatClick}
+                      precioPorButaca={pricing?.finalPrice || selectedMovie.basePrice}
+                    />
+                  )}
+                  {!MATRIZ_POR_ZONAS && (<>
                   <div className="text-center">
                     <div className="w-3/4 max-w-md h-1.5 bg-zinc-700 mx-auto rounded-full mb-1"></div>
                     <span className="text-[10px] font-mono tracking-widest text-zinc-500 uppercase">PANTALLA</span>
@@ -1406,6 +1441,7 @@ export function CineMaxApp() {
                       </div>
                     ))}
                   </div>
+                  </>)}
 
                   <div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800 flex flex-col sm:flex-row items-center justify-between gap-3">
                     <div>
@@ -1568,6 +1604,8 @@ export function CineMaxApp() {
                   >
                     Ver Mis Entradas y QRs
                   </button>
+                  {/* [CineMax mejoras] Envío del correo con las entradas */}
+                  <AvisoCorreoCompra orden={lastCompletedOrder} tickets={tickets} vouchers={vouchers} />
                 </div>
               </div>
             )}
@@ -1658,6 +1696,10 @@ export function CineMaxApp() {
               <div>
                 <h2 className="text-xl font-bold text-white">Panel de Administración de Cartelera</h2>
                 <p className="text-xs text-zinc-400">Configura películas, salas asignadas y horarios.</p>
+                {/* [CineMax mejoras] Estado de la base de datos */}
+                <div className="mt-2">
+                  <EstadoBaseDatos estado={estadoBD} />
+                </div>
               </div>
               <button
                 onClick={openCreateMovieModal}
@@ -1738,6 +1780,18 @@ export function CineMaxApp() {
                   ))}
                 </tbody>
               </table>
+            </div>
+
+            {/* [CineMax mejoras] Combos de confitería (crear, editar, eliminar) y bandeja de correos */}
+            <div className="cmx-admin-extra">
+              <ConfectioneryAdmin
+                items={confectionery}
+                onChange={(next) => {
+                  setConfectionery(next);
+                  broadcastChanges({ ...syncPayloadRef.current, confectionery: next });
+                }}
+              />
+              <BandejaCorreos />
             </div>
           </div>
         )}

@@ -6,3 +6,8 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# [CineMax mejoras] Firebase
+!.env.firebase.example
+.firebase/
+firebase/funciones/lib/
