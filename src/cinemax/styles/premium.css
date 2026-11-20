@@ -1,0 +1,844 @@
+/*
+ * CineMax · Capa visual premium
+ * ---------------------------------------------------------------
+ * Archivo NUEVO que se suma a index.css. No cambia la paleta original
+ * (zinc + rojo CineMax + esmeralda/ámbar/azul para estados): solo
+ * tipografía, ritmo, estados interactivos, movimiento y los componentes nuevos.
+ * Sistema documentado en docs/SISTEMA-DE-DISENO.md.
+ */
+
+@import '@fontsource-variable/plus-jakarta-sans/wght.css';
+@import '@fontsource-variable/bricolage-grotesque/opsz.css';
+@import '@fontsource/jetbrains-mono/400.css';
+@import '@fontsource/jetbrains-mono/700.css';
+
+/* ---------- Tokens ---------- */
+:root {
+  /* Tipografía: Tailwind usa estas variables en font-sans y font-mono */
+  --font-sans: 'Plus Jakarta Sans Variable', 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --cmx-font-display: 'Bricolage Grotesque Variable', 'Plus Jakarta Sans Variable', system-ui, sans-serif;
+
+  /* Paleta existente (sin cambios), como tokens con nombre */
+  --cmx-noche: #09090b; /* zinc-950: fondo */
+  --cmx-telon: #18181b; /* zinc-900: superficies */
+  --cmx-butaca: #27272a; /* zinc-800: bordes y controles */
+  --cmx-sombra: #3f3f46; /* zinc-700 */
+  --cmx-texto-2: #a1a1aa; /* zinc-400 */
+  --cmx-rojo: #dc2626; /* red-600: acción principal */
+  --cmx-rojo-claro: #ef4444; /* red-500: foco */
+  --cmx-esmeralda: #34d399;
+  --cmx-ambar: #fbbf24;
+
+  /* Movimiento */
+  --cmx-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --cmx-ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --cmx-rapido: 160ms;
+  --cmx-medio: 240ms;
+}
+
+/* ---------- Base tipográfica (capa base: las utilidades de Tailwind siguen mandando) ---------- */
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    font-family: var(--font-sans);
+    font-feature-settings: 'ss01', 'cv11';
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--cmx-font-display);
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+    font-optical-sizing: auto;
+  }
+  p {
+    text-wrap: pretty;
+  }
+  /* Logotipo del encabezado */
+  header .text-xl.font-black {
+    font-family: var(--cmx-font-display);
+    letter-spacing: -0.035em;
+  }
+  button,
+  a,
+  [role='button'] {
+    transition-property: color, background-color, border-color, box-shadow, opacity, transform;
+    transition-duration: var(--cmx-rapido);
+    transition-timing-function: var(--cmx-ease-out);
+    -webkit-tap-highlight-color: transparent;
+  }
+  input,
+  select,
+  textarea {
+    transition: border-color var(--cmx-rapido) ease, box-shadow var(--cmx-rapido) ease;
+  }
+  input:focus,
+  select:focus,
+  textarea:focus {
+    outline: none;
+    border-color: var(--cmx-rojo-claro);
+    box-shadow: 0 0 0 3px rgb(239 68 68 / 0.18);
+  }
+}
+
+/* Cifras alineadas en precios, horas y códigos */
+.font-mono {
+  font-variant-numeric: tabular-nums slashed-zero;
+  font-feature-settings: 'calt' 0;
+}
+
+/* ---------- Estados interactivos globales ---------- */
+:focus-visible {
+  outline: 2px solid var(--cmx-rojo-claro);
+  outline-offset: 2px;
+}
+button:not(:disabled):active,
+a:active {
+  transform: scale(0.97);
+}
+button:disabled {
+  cursor: not-allowed;
+}
+
+/* Pestaña activa del encabezado: un subrayado en el rojo de la marca */
+header nav button.bg-zinc-800 {
+  box-shadow: inset 0 -2px 0 var(--cmx-rojo);
+}
+/* Widget original de credenciales: hasta escritorio ancho queda solo el icono para no tapar los botones */
+@media (max-width: 1279px) {
+  .fixed.bottom-4.left-4 > button > span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .fixed.bottom-4.left-4 > button {
+    padding: 0.75rem;
+  }
+}
+/* En celular, la navegación baja a su propia fila y se desplaza en vez de romper el encabezado */
+@media (max-width: 767px) {
+  header > div {
+    flex-wrap: wrap;
+    height: auto;
+    row-gap: 0.25rem;
+    padding-top: 0.625rem;
+    padding-bottom: 0.375rem;
+  }
+  header nav {
+    order: 3;
+    overflow-x: auto;
+    scrollbar-width: none;
+    margin-inline: -0.75rem;
+    padding-inline: 0.75rem;
+    width: calc(100% + 1.5rem);
+  }
+  header nav::-webkit-scrollbar {
+    display: none;
+  }
+  header nav button {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+}
+
+/* Títulos de sección: escala modular más clara (1.25) para jerarquía entre título y apoyo */
+main h2.text-xl {
+  font-size: clamp(1.5rem, 1.1rem + 1.4vw, 2rem);
+  line-height: 1.15;
+  margin-bottom: 0.25rem;
+}
+main h2.text-lg {
+  font-size: clamp(1.25rem, 1rem + 0.8vw, 1.5rem);
+  line-height: 1.2;
+}
+
+/* Tablas originales: en pantallas angostas se desplazan dentro de su tarjeta */
+.rounded-2xl.overflow-hidden:has(> table) {
+  overflow-x: auto;
+}
+.rounded-2xl.overflow-hidden > table {
+  min-width: 40rem;
+}
+.rounded-2xl.overflow-hidden > table tbody tr {
+  transition: background-color var(--cmx-rapido) ease;
+}
+
+/* ---------- Modales: aparecen desde el centro, sin saltos ---------- */
+.fixed.inset-0.z-50 {
+  animation: cmx-fundido var(--cmx-medio) var(--cmx-ease-out) both;
+}
+.fixed.inset-0.z-50 > div,
+.fixed.inset-0.z-50 > [role='dialog'] {
+  animation: cmx-modal var(--cmx-medio) var(--cmx-ease-out) both;
+}
+@keyframes cmx-fundido {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes cmx-modal {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.97);
+  }
+}
+
+/* ---------- Cartelera ---------- */
+/* Tarjetas de película: un solo momento orquestado al cargar */
+.md\:grid-cols-2.lg\:grid-cols-3.gap-6 > .bg-zinc-900 {
+  animation: cmx-subir 420ms var(--cmx-ease-out) both;
+  transition: border-color var(--cmx-medio) ease, transform var(--cmx-medio) var(--cmx-ease-out);
+}
+.md\:grid-cols-2.lg\:grid-cols-3.gap-6 > .bg-zinc-900:nth-child(2) {
+  animation-delay: 60ms;
+}
+.md\:grid-cols-2.lg\:grid-cols-3.gap-6 > .bg-zinc-900:nth-child(3) {
+  animation-delay: 120ms;
+}
+.md\:grid-cols-2.lg\:grid-cols-3.gap-6 > .bg-zinc-900:nth-child(n + 4) {
+  animation-delay: 180ms;
+}
+@keyframes cmx-subir {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+/* Póster: degradado inferior para que las etiquetas y el título respiren sobre la imagen */
+.relative.bg-zinc-950[class*='aspect-'] {
+  overflow: hidden;
+}
+.relative.bg-zinc-950[class*='aspect-']::after {
+  content: '';
+  position: absolute;
+  inset: 40% 0 0 0;
+  background: linear-gradient(to bottom, transparent, var(--cmx-telon));
+  pointer-events: none;
+}
+.relative.bg-zinc-950[class*='aspect-'] > .absolute {
+  z-index: 1;
+}
+.relative.bg-zinc-950[class*='aspect-'] > img {
+  transition: transform 600ms var(--cmx-ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .md\:grid-cols-2.lg\:grid-cols-3.gap-6 > .bg-zinc-900:hover {
+    border-color: var(--cmx-sombra);
+  }
+  .md\:grid-cols-2.lg\:grid-cols-3.gap-6 > .bg-zinc-900:hover .relative.bg-zinc-950[class*='aspect-'] > img {
+    transform: scale(1.04);
+  }
+}
+
+/* ---------- Pasos de la compra ---------- */
+.cmx-pasos {
+  max-width: 48rem;
+  margin: 0 auto 1.75rem;
+}
+.cmx-pasos ol {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.cmx-pasos li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1 1 0;
+  min-width: 0;
+  font-size: 0.75rem;
+  color: var(--cmx-texto-2);
+}
+.cmx-pasos li:not(:last-child)::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--cmx-butaca);
+  min-width: 0.75rem;
+}
+.cmx-pasos li[data-estado='hecho']::after {
+  background: #52525b;
+}
+.cmx-pasos li:last-child {
+  flex: 0 0 auto;
+}
+.cmx-pasos__punto {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font: 700 0.6875rem/1 var(--font-mono);
+  border: 1px solid var(--cmx-sombra);
+  flex-shrink: 0;
+  transition: background-color var(--cmx-medio) ease, border-color var(--cmx-medio) ease;
+}
+.cmx-pasos li[data-estado='hecho'] .cmx-pasos__punto {
+  background: var(--cmx-butaca);
+  color: #fff;
+}
+.cmx-pasos li[data-estado='actual'] {
+  color: #fff;
+  font-weight: 600;
+}
+.cmx-pasos li[data-estado='actual'] .cmx-pasos__punto {
+  background: var(--cmx-rojo);
+  border-color: var(--cmx-rojo);
+  color: #fff;
+}
+.cmx-pasos__texto {
+  white-space: nowrap;
+}
+@media (max-width: 639px) {
+  .cmx-pasos li[data-estado='actual'] {
+    flex: 1.6 1 0;
+  }
+  .cmx-pasos li:not([data-estado='actual']) .cmx-pasos__texto {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+}
+
+/* ---------- Matriz de la sala ---------- */
+.cmx-sala {
+  --s: clamp(1.625rem, 7.4vw, 2.5rem);
+  --g: clamp(0.25rem, 1.1vw, 0.5rem);
+  --pasillo: clamp(0.75rem, 3vw, 1.75rem);
+  --letra: 1rem;
+}
+.cmx-pantalla {
+  position: relative;
+  max-width: 34rem;
+  margin: 0 auto;
+  text-align: center;
+}
+.cmx-pantalla__texto {
+  display: block;
+  margin-top: -0.75rem;
+  margin-bottom: 0.5rem;
+  font: 600 0.6875rem/1 var(--font-sans);
+  color: var(--cmx-texto-2);
+  letter-spacing: 0.04em;
+}
+.cmx-sala__scroll {
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+  margin-inline: -1rem;
+  padding-inline: 0.25rem;
+}
+@media (min-width: 640px) {
+  .cmx-sala__scroll {
+    margin-inline: 0;
+  }
+}
+.cmx-sala__grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: max-content;
+  margin: 0 auto;
+}
+.cmx-zona {
+  display: flex;
+  flex-direction: column;
+  gap: var(--g);
+}
+.cmx-zona__titulo {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0 calc(var(--letra) + var(--g));
+  margin-bottom: 0.125rem;
+  font-size: 0.6875rem;
+}
+.cmx-zona__titulo::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--cmx-butaca);
+  order: 1;
+}
+.cmx-zona__nombre {
+  color: #d4d4d8;
+  font-weight: 600;
+}
+.cmx-zona__libres {
+  order: 2;
+  color: var(--cmx-texto-2);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.cmx-fila {
+  display: grid;
+  grid-template-columns: var(--letra) repeat(4, var(--s)) var(--pasillo) repeat(4, var(--s)) var(--letra);
+  gap: var(--g);
+  align-items: center;
+  animation: cmx-subir 320ms var(--cmx-ease-out) both;
+  animation-delay: calc(var(--cmx-i, 0) * 35ms);
+}
+.cmx-fila__letra {
+  font: 700 0.625rem/1 var(--font-mono);
+  color: var(--cmx-texto-2);
+  text-align: center;
+}
+.cmx-butaca {
+  width: var(--s);
+  height: var(--s);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* Forma de silla: respaldo más grueso arriba, asiento redondeado */
+  border-radius: 0.7rem 0.7rem 0.4rem 0.4rem;
+  border-top-width: 3px;
+  font: 700 0.625rem/1 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  transition: background-color 140ms ease, border-color 140ms ease, transform 160ms var(--cmx-ease-out),
+    opacity 140ms ease;
+}
+.cmx-butaca[data-estado='seleccionada'] {
+  transform: translateY(-1px);
+}
+/* Vendida y en compra se distinguen también por forma, no solo por color */
+.cmx-butaca[data-estado='ocupada'] {
+  background-image: repeating-linear-gradient(45deg, transparent 0 4px, rgb(255 255 255 / 0.1) 4px 5px);
+}
+.cmx-butaca[data-estado='reservada'] {
+  border-style: dashed;
+}
+.cmx-butaca[aria-disabled]:active {
+  transform: none;
+}
+.cmx-butaca[data-sin-cupo] {
+  opacity: 0.55;
+}
+.cmx-butaca:not([aria-disabled]):active {
+  transform: scale(0.92);
+}
+@media (hover: hover) and (pointer: fine) {
+  .cmx-butaca[data-estado='disponible']:hover {
+    background-color: #3f3f46;
+  }
+  .cmx-butaca[data-estado='accesible']:hover {
+    background-color: rgb(30 58 138 / 0.5);
+  }
+  .cmx-butaca[data-estado='seleccionada']:hover {
+    background-color: var(--cmx-rojo-claro);
+  }
+}
+.cmx-butaca--mini {
+  --s: 0.875rem;
+  border-radius: 0.3rem 0.3rem 0.2rem 0.2rem;
+  border-top-width: 2px;
+  display: inline-block;
+}
+.cmx-butaca--vacia {
+  visibility: hidden;
+}
+.cmx-sala__info {
+  min-height: 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+  color: var(--cmx-texto-2);
+  text-align: center;
+}
+.cmx-sala__info > * + *::before {
+  content: '';
+  display: inline-block;
+  width: 3px;
+  height: 3px;
+  border-radius: 999px;
+  background: #52525b;
+  margin-right: 0.75rem;
+  vertical-align: middle;
+}
+.cmx-sala__pie {
+  display: grid;
+  gap: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--cmx-butaca);
+}
+@media (min-width: 640px) {
+  .cmx-sala__pie {
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+  }
+}
+.cmx-leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.625rem 1rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 0.6875rem;
+  color: var(--cmx-texto-2);
+}
+.cmx-leyenda li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.cmx-ocupacion {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 0.6875rem;
+}
+.cmx-ocupacion__barra {
+  margin-top: 0.375rem;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--cmx-butaca);
+  overflow: hidden;
+}
+.cmx-ocupacion__barra > span {
+  display: block;
+  height: 100%;
+  background: #71717a;
+  transform-origin: left;
+  transition: transform 400ms var(--cmx-ease-out);
+}
+
+/* ---------- Paneles nuevos del administrador ---------- */
+.cmx-panel {
+  background: var(--cmx-telon);
+  border: 1px solid var(--cmx-butaca);
+  border-radius: 1rem;
+  padding: 1.25rem;
+}
+@media (min-width: 640px) {
+  .cmx-panel {
+    padding: 1.5rem;
+  }
+}
+.cmx-panel__cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+.cmx-panel__titulo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+}
+.cmx-combos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr));
+  gap: 0.75rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.cmx-combo {
+  display: flex;
+  gap: 0.875rem;
+  padding: 0.75rem;
+  background: var(--cmx-noche);
+  border: 1px solid var(--cmx-butaca);
+  border-radius: 0.75rem;
+  transition: border-color var(--cmx-medio) ease;
+}
+@media (hover: hover) and (pointer: fine) {
+  .cmx-combo:hover {
+    border-color: var(--cmx-sombra);
+  }
+}
+.cmx-combo__img {
+  width: 4.5rem;
+  height: 4.5rem;
+  border-radius: 0.5rem;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.cmx-combo__cuerpo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.cmx-combo__nombre {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.25;
+}
+.cmx-combo__pie {
+  margin-top: auto;
+  padding-top: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.cmx-confirmar {
+  animation: cmx-fundido var(--cmx-rapido) ease-out both;
+}
+.cmx-icono {
+  width: 2.25rem;
+  height: 2.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  background: var(--cmx-butaca);
+  color: #d4d4d8;
+  flex-shrink: 0;
+}
+.cmx-icono:disabled {
+  opacity: 0.35;
+}
+.cmx-icono--peligro {
+  color: #f87171;
+}
+@media (hover: hover) and (pointer: fine) {
+  .cmx-icono:not(:disabled):hover {
+    background: var(--cmx-sombra);
+    color: #fff;
+  }
+  .cmx-icono--peligro:hover {
+    background: rgb(69 10 10) !important;
+    color: #fca5a5 !important;
+  }
+}
+.cmx-input {
+  width: 100%;
+  background: var(--cmx-noche);
+  border: 1px solid var(--cmx-butaca);
+  border-radius: 0.5rem;
+  padding: 0.625rem 0.75rem;
+  color: #fff;
+  font-size: 0.8125rem;
+}
+.cmx-input::placeholder {
+  color: #71717a;
+}
+.cmx-input[aria-invalid='true'] {
+  border-color: rgb(239 68 68 / 0.7);
+}
+.cmx-vacio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.375rem;
+  text-align: center;
+  padding: 2rem 1rem;
+  border: 1px dashed var(--cmx-butaca);
+  border-radius: 0.75rem;
+}
+.cmx-toast {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 60;
+  max-width: min(22rem, calc(100vw - 2rem));
+  background: var(--cmx-telon);
+  border: 1px solid var(--cmx-sombra);
+  color: #fff;
+  font-size: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 12px 32px -8px rgb(0 0 0 / 0.6);
+  transition: opacity var(--cmx-medio) ease, transform var(--cmx-medio) var(--cmx-ease-out);
+}
+@starting-style {
+  .cmx-toast {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+}
+
+/* ---------- Correo ---------- */
+.cmx-aviso-correo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 0.875rem;
+  max-width: 34rem;
+  margin: 1.25rem auto 0;
+  padding: 0.875rem 1rem;
+  background: var(--cmx-noche);
+  border: 1px solid var(--cmx-butaca);
+  border-radius: 0.75rem;
+}
+.cmx-aviso-correo__icono {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: var(--cmx-butaca);
+  color: #d4d4d8;
+}
+.cmx-aviso-correo[data-estado='enviado'] .cmx-aviso-correo__icono {
+  background: rgb(2 44 34 / 0.6);
+  color: var(--cmx-esmeralda);
+}
+.cmx-aviso-correo[data-estado='error'] .cmx-aviso-correo__icono {
+  background: rgb(69 26 3 / 0.7);
+  color: var(--cmx-ambar);
+}
+.cmx-boton-sec {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  background: var(--cmx-butaca);
+  border: 1px solid var(--cmx-sombra);
+  color: #fff;
+  white-space: nowrap;
+}
+@media (hover: hover) and (pointer: fine) {
+  .cmx-boton-sec:hover {
+    background: var(--cmx-sombra);
+  }
+}
+.cmx-lista-correos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.cmx-lista-correos li + li {
+  border-top: 1px solid var(--cmx-butaca);
+}
+.cmx-correo-fila {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0.5rem;
+  text-align: left;
+  border-radius: 0.5rem;
+}
+@media (hover: hover) and (pointer: fine) {
+  .cmx-correo-fila:hover {
+    background: var(--cmx-noche);
+  }
+}
+.cmx-chip {
+  font-size: 0.625rem;
+  font-weight: 700;
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.375rem;
+  flex-shrink: 0;
+  background: var(--cmx-butaca);
+  color: #d4d4d8;
+  min-width: 5.5rem;
+  text-align: center;
+}
+.cmx-chip[data-estado='enviado'] {
+  background: rgb(2 44 34);
+  color: #6ee7b7;
+}
+.cmx-chip[data-estado='error'] {
+  background: rgb(69 10 10);
+  color: #fca5a5;
+}
+.cmx-chip[data-estado='pendiente'] {
+  background: rgb(69 26 3);
+  color: #fcd34d;
+}
+
+/* ---------- Estado de la base de datos ---------- */
+.cmx-bd {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 0.375rem 0.625rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--cmx-butaca);
+  color: var(--cmx-texto-2);
+  background: var(--cmx-noche);
+}
+.cmx-bd[data-estado='en-linea'] {
+  color: var(--cmx-esmeralda);
+  border-color: rgb(6 78 59);
+}
+.cmx-bd[data-estado='error'] {
+  color: var(--cmx-ambar);
+  border-color: rgb(120 53 15);
+}
+.cmx-admin-extra {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.5rem;
+}
+.cmx-admin-extra > * {
+  min-width: 0;
+}
+@media (min-width: 1024px) {
+  .cmx-admin-extra {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    align-items: start;
+  }
+}
+
+/* Controles más cómodos para el pulgar en pantallas táctiles */
+@media (pointer: coarse) {
+  .cmx-icono {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+  .cmx-boton-sec {
+    padding: 0.75rem 0.875rem;
+  }
+}
+
+/* Con un modal abierto, el widget original de credenciales no tapa el diálogo */
+body:has(.fixed.inset-0.z-50) .fixed.bottom-4.left-4 {
+  visibility: hidden;
+}
+
+/* ---------- Movimiento reducido ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-property: color, background-color, border-color, opacity !important;
+  }
+  button:not(:disabled):active,
+  a:active,
+  .cmx-butaca:not([aria-disabled]):active {
+    transform: none;
+  }
+}
